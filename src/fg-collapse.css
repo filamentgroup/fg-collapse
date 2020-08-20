@@ -1,0 +1,30 @@
+fg-collapse > button {
+display: none;
+}
+fg-collapse.collapse > button  {
+display: block;
+padding: .5em 0 .5em 35px;
+padding-left: 35px;
+margin-bottom: 0;
+cursor: pointer;
+background: url(tri-down.png) 10px 50% no-repeat;
+border: 0;
+font-size: 1em;
+margin-top: 0;
+background-color: #fff;
+}
+fg-collapse > *:nth-child(2) {
+	margin-top: 0;
+	border-top-width: 0;
+	padding-top: 1.5em;
+	padding-bottom: 1.5em;
+	padding-left: 10px;
+}
+
+fg-collapse > button[aria-expanded=false],
+details:not([open]) > summary {
+	background-image: url(tri-right.png);
+}
+fg-collapse > button:focus {
+	background-color: #eee;
+}
