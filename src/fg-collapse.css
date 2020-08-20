@@ -7,7 +7,7 @@ padding: .5em 0 .5em 35px;
 padding-left: 35px;
 margin-bottom: 0;
 cursor: pointer;
-background: url(tri-down.png) 10px 50% no-repeat;
+background: url(../demo/tri-down.png) 10px 50% no-repeat;
 border: 0;
 font-size: 1em;
 margin-top: 0;
@@ -22,7 +22,7 @@ fg-collapse > *:nth-child(2) {
 }
 
 fg-collapse > button[aria-expanded=false] {
-	background-image: url(tri-right.png);
+	background-image: url(../demo/tri-right.png);
 }
 fg-collapse > button:focus {
 	background-color: #eee;
