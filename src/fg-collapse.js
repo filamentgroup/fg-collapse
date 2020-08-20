@@ -52,7 +52,7 @@ class Collapse extends HTMLElement {
 	addStyle(){
 		var style = document.createElement("style");
 		style.innerText = `
-			*fg-collapse[collapsed] > *:nth-child(2) { display: none; }
+			fg-collapse[collapsed] > *:nth-child(2) { display: none; }
 		`;
 		this.append(style);
 	}
