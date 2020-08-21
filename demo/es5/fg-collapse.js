@@ -47,18 +47,9 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
       this.collapsed = this.getAttribute("collapsed") !== false;
       this.classList.add("collapse");
-      this.initEvent = new CustomEvent("init", {
-        bubbles: true,
-        cancelable: false
-      });
-      this.expandEvent = new CustomEvent("expand", {
-        bubbles: true,
-        cancelable: false
-      });
-      this.collapseEvent = new CustomEvent("collapse", {
-        bubbles: true,
-        cancelable: false
-      });
+      this.initEvent = this.makeEvent("init");
+      this.expandEvent = this.makeEvent("expand");
+      this.collapseEvent = this.makeEvent("collapseEvent");
       this.headerBtn = this.firstElementChild;
       this.content = this.headerBtn.nextElementSibling;
       this.appendBtn();
@@ -68,12 +59,26 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.dispatchEvent(this.initEvent);
     }
   }, {
+    key: "makeEvent",
+    value: function makeEvent(evtName) {
+      if (typeof window.CustomEvent === "function") {
+        return new CustomEvent(evtName, {
+          bubbles: true,
+          cancelable: false
+        });
+      } else {
+        var evt = document.createEvent('CustomEvent');
+        evt.initCustomEvent(evtName, true, true, {});
+        return evt;
+      }
+    }
+  }, {
     key: "appendBtn",
     value: function appendBtn() {
       if (!this.headerBtn.matches("button")) {
         var btn = document.createElement("button");
         btn.innerHTML = this.toggletext;
-        this.headerBtn.append(btn);
+        this.headerBtn.appendChild(btn);
         this.headerBtn = btn;
       }
     }
