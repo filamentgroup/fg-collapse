@@ -13,11 +13,20 @@ font-size: 1em;
 margin-top: 0;
 background-color: #fff;
 }
+fg-collapse > *:nth-child(1) {
+	font-size: 1em;
+	color: inherit;
+
+}
+fg-collapse > *:nth-child(1) button {
+	padding: .5em;
+	font-size: inherit;
+}
 fg-collapse > *:nth-child(2) {
 	margin-top: 0;
 	border-top-width: 0;
-	padding-top: 1.5em;
-	padding-bottom: 1.5em;
+	padding-top: .5em;
+	padding-bottom: .5em;
 	padding-left: 10px;
 }
 
