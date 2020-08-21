@@ -1,35 +1,9 @@
 fg-collapse > button {
-display: none;
+	display: none;
 }
 fg-collapse.collapse > *:first-child  {
-display: block;
-padding: .5em 0 .5em 35px;
-padding-left: 35px;
-margin-bottom: 0;
-cursor: pointer;
-background: url(../demo/tri-down.png) 10px 50% no-repeat;
-border: 0;
-font-size: 1em;
-margin-top: 0;
-background-color: #fff;
-color: inherit;
+	display: block;
 }
-fg-collapse > *:first-child button {
-	padding: .2em ;
-	margin-left: .5em;
-	font-size: .8em;
-}
-fg-collapse > *:nth-child(2) {
-	margin-top: 0;
-	border-top-width: 0;
-	padding-top: .5em;
-	padding-bottom: .5em;
-	padding-left: 10px;
-}
-
-fg-collapse[collapsed] > *:first-child {
-	background-image: url(../demo/tri-right.png);
-}
-fg-collapse > button:focus {
-	background-color: #eee;
+fg-collapse[collapsed] > *:nth-child(2) { 
+	display: none; 
 }

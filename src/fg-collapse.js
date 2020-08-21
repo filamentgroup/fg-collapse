@@ -30,7 +30,6 @@ class Collapse extends HTMLElement {
 		this.setRelationship();
 		this.bindEvents();
 		this.setState();
-		this.addStyle();
 		this.dispatchEvent( this.initEvent );
 	}
 
@@ -47,14 +46,6 @@ class Collapse extends HTMLElement {
 		this.contentId = this.content.id || "collapsible_" + new Date().getTime();
 		this.content.id = this.contentId;
 		this.headerBtn.setAttribute( "aria-controls", this.content.id );
-	}
-
-	addStyle(){
-		var style = document.createElement("style");
-		style.innerText = `
-			fg-collapse[collapsed] > *:nth-child(2) { display: none; }
-		`;
-		this.append(style);
 	}
 
 	expand(){

@@ -6,7 +6,40 @@
 <script src="./es5/fg-collapse.js" defer nomodule></script>
 <link rel="stylesheet" href="../src/fg-collapse.css">
 
+<style>
+  /* non-critical collapse demo styles */
+fg-collapse.collapse > *:first-child  {
+padding: .5em 0 .5em 35px;
+padding-left: 35px;
+margin-bottom: 0;
+cursor: pointer;
+background: url(../demo/tri-down.png) 10px 50% no-repeat;
+border: 0;
+font-size: 1em;
+margin-top: 0;
+background-color: #fff;
+color: inherit;
+}
+fg-collapse > *:first-child button {
+	padding: .2em ;
+	margin-left: .5em;
+	font-size: .8em;
+}
+fg-collapse > *:nth-child(2) {
+	margin-top: 0;
+	border-top-width: 0;
+	padding-top: .5em;
+	padding-bottom: .5em;
+	padding-left: 10px;
+}
 
+fg-collapse[collapsed] > *:first-child {
+	background-image: url(../demo/tri-right.png);
+}
+fg-collapse > button:focus {
+	background-color: #eee;
+}
+</style>
 
 
 # Demo
