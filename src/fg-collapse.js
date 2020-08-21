@@ -36,7 +36,8 @@ class Collapse extends HTMLElement {
 	}
 
 	appendBtn(){
-		if( !this.headerBtn.matches( "button" ) ){
+		var whichMatches = Element.prototype.matches || Element.prototype.msMatchesSelector;
+		if( !whichMatches.call(this.headerBtn, "button") ){
 			var btn = document.createElement( "button" );
 			btn.innerHTML = this.toggletext;
 			this.headerBtn.appendChild( btn );
