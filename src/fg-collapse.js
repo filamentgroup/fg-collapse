@@ -94,7 +94,7 @@ class Collapse extends HTMLElement {
 
 	bindEvents(){
 		var self = this;
-		this.headerBtn.addEventListener('click', event => self.toggle());
+		this.firstElementChild.addEventListener('click', event => self.toggle());
 	}
 }
 
