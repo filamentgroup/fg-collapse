@@ -4,6 +4,6 @@ fg-collapse > button {
 fg-collapse.collapse > *:first-child  {
 	display: block;
 }
-fg-collapse[collapsed] > *:nth-child(2) { 
+fg-collapse.collapse[collapsed] > *:nth-child(2) { 
 	display: none; 
 }

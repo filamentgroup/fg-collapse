@@ -61,7 +61,7 @@ This collapsible component is built to be easy to use, dependency-free (aside fr
 
 To make a collapse, create a `fg-collapse` element to contain your content. This element will be recognized by this component's javascript, and allow it to be enhanced with necessary behaviors and accessibility information. 
 
-Inside the collapse element, place a heading or button followed by one element that will be collapsed and expanded when that button is clicked. If you start with a button, the button will be hidden until it becomes interactive. If you start with a heading, the heading will always be visible and the script will append a button to the heading.
+Inside the collapse element, place a heading or button followed by one element that will be collapsed and expanded when that button is clicked. If you start with a button, the button will be hidden (with CSS) until it becomes interactive. If you start with a heading, the heading will always be visible and the script will append a button to the heading, allowing it to become interactive.
 
 
 Starting with a button, state expanded:
