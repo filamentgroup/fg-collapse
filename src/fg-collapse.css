@@ -27,7 +27,7 @@ fg-collapse > *:nth-child(2) {
 	padding-left: 10px;
 }
 
-fg-collapse > button[aria-expanded=false] {
+fg-collapse > *:first-child[aria-expanded=false] {
 	background-image: url(../demo/tri-right.png);
 }
 fg-collapse > button:focus {
