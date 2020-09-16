@@ -2,8 +2,16 @@
 class Collapse extends HTMLElement {
 	constructor(){
 		super();
+		this._init = this._init.bind(this);
+    	this._observer = new MutationObserver(this._init);
 	}
 	connectedCallback(){
+		if (this.children.length) {
+			this._init();
+		}
+		this._observer.observe(this, { childList: true });
+	}
+	_init(){
 		this.toggletext = "Toggle";
 		var toggleAttr = this.getAttribute("toggletext");
 		this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
@@ -83,7 +91,7 @@ class Collapse extends HTMLElement {
 		}
 	}
 	disconnectedCallback(){
-		// if needed..
+		 this._observer.disconnect();
 	}
 
 	bindEvents(){

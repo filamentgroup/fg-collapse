@@ -34,14 +34,30 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
   var _super = _createSuper(Collapse);
 
   function Collapse() {
+    var _this;
+
     _classCallCheck(this, Collapse);
 
-    return _super.call(this);
+    _this = _super.call(this);
+    _this._init = _this._init.bind(_assertThisInitialized(_this));
+    _this._observer = new MutationObserver(_this._init);
+    return _this;
   }
 
   _createClass(Collapse, [{
     key: "connectedCallback",
     value: function connectedCallback() {
+      if (this.children.length) {
+        this._init();
+      }
+
+      this._observer.observe(this, {
+        childList: true
+      });
+    }
+  }, {
+    key: "_init",
+    value: function _init() {
       this.toggletext = "Toggle";
       var toggleAttr = this.getAttribute("toggletext");
       this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
@@ -127,7 +143,8 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
     }
   }, {
     key: "disconnectedCallback",
-    value: function disconnectedCallback() {// if needed..
+    value: function disconnectedCallback() {
+      this._observer.disconnect();
     }
   }, {
     key: "bindEvents",
