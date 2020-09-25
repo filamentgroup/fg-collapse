@@ -28,6 +28,7 @@ class Collapse extends HTMLElement {
 		this.appendBtn();
 		this.setRelationship();
 		this.bindEvents();
+		this.cssStateOverride();
 		this.setState();
 		this.dispatchEvent( this.initEvent );
 	}
@@ -74,7 +75,8 @@ class Collapse extends HTMLElement {
 		this.dispatchEvent( this.collapseEvent );
 	}
 
-	setState(){
+	cssStateOverride(){
+		var startState = this.collapsed;
 		var contentOverride = window.getComputedStyle( this ).getPropertyValue( "--collapse-state" );
 		if ( contentOverride.match(/collapsed/) ){
 			this.collapsed = true;
@@ -82,6 +84,12 @@ class Collapse extends HTMLElement {
 		if ( contentOverride.match(/expanded/) ){
 			this.collapsed = false;
 		}
+		if( this.collapsed !== startState ){
+			this.setState();
+		}
+	}
+
+	setState(){
 		if( this.collapsed ){
 			this.collapse();
 		}
@@ -101,11 +109,19 @@ class Collapse extends HTMLElement {
 	}
 	disconnectedCallback(){
 		 this._observer.disconnect();
+		 this.resizeObserver.disconnect();
 	}
 
 	bindEvents(){
 		var self = this;
 		this.firstElementChild.addEventListener('click', event => self.toggle());
+		// possibly move to a resize handler
+		this.resizeObserver = new ResizeObserver(entries => {
+			for (const entry of entries) {
+				self.cssStateOverride();
+			}
+		});
+		this.resizeObserver.observe(document.body);
 	}
 }
 
