@@ -17,6 +17,7 @@ class Collapse extends HTMLElement {
 		this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
 		this.collapsed = this.getAttribute("collapsed") !== "false";
 		this.classList.add("collapse");
+		
 
 		this.initEvent = this.makeEvent("init");
 		this.expandEvent = this.makeEvent("expand");
@@ -74,6 +75,13 @@ class Collapse extends HTMLElement {
 	}
 
 	setState(){
+		var contentOverride = window.getComputedStyle( this ).getPropertyValue( "--collapse-state" );
+		if ( contentOverride.match(/collapsed/) ){
+			this.collapsed = true;
+		}
+		if ( contentOverride.match(/expanded/) ){
+			this.collapsed = false;
+		}
 		if( this.collapsed ){
 			this.collapse();
 		}
@@ -81,6 +89,7 @@ class Collapse extends HTMLElement {
 			this.expand();
 		}
 	}
+	
 
 	toggle(){
 		if( this.collapsed ){
