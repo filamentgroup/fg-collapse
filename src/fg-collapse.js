@@ -15,7 +15,7 @@ class Collapse extends HTMLElement {
 		this.toggletext = "Toggle";
 		var toggleAttr = this.getAttribute("toggletext");
 		this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
-		this.collapsed = this.getAttribute("collapsed") !== false;
+		this.collapsed = this.getAttribute("collapsed") !== "false";
 		this.classList.add("collapse");
 
 		this.initEvent = this.makeEvent("init");
