@@ -61,7 +61,7 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.toggletext = "Toggle";
       var toggleAttr = this.getAttribute("toggletext");
       this.toggletext = toggleAttr !== null ? toggleAttr : this.toggletext;
-      this.collapsed = this.getAttribute("collapsed") !== false;
+      this.collapsed = this.getAttribute("collapsed") !== "false";
       this.classList.add("collapse");
       this.initEvent = this.makeEvent("init");
       this.expandEvent = this.makeEvent("expand");
@@ -126,6 +126,16 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
   }, {
     key: "setState",
     value: function setState() {
+      var contentOverride = window.getComputedStyle(this).getPropertyValue("--collapse-state");
+
+      if (contentOverride.match(/collapsed/)) {
+        this.collapsed = true;
+      }
+
+      if (contentOverride.match(/expanded/)) {
+        this.collapsed = false;
+      }
+
       if (this.collapsed) {
         this.collapse();
       } else {
