@@ -75,10 +75,12 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.headerBtn = this.firstElementChild;
       this.content = this.headerBtn.nextElementSibling;
       this.appendBtn();
-      this.setRelationship();
-      this.bindEvents();
-      this.cssStateOverride();
+      this.setControlsRelationship();
       this.setState();
+      this.cssStateOverride();
+      this.staticHandler();
+      this.menuRoleHandler();
+      this.bindEvents();
       this.dispatchEvent(this.initEvent);
     }
   }, {
@@ -108,11 +110,26 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       }
     }
   }, {
-    key: "setRelationship",
-    value: function setRelationship() {
-      this.contentId = this.content.id || "collapsible_" + new Date().getTime();
-      this.content.id = this.contentId;
+    key: "setControlsRelationship",
+    value: function setControlsRelationship() {
+      this.content.id = this.content.id || "collapsible_" + new Date().getTime();
       this.headerBtn.setAttribute("aria-controls", this.content.id);
+    }
+  }, {
+    key: "removeControlsRelationship",
+    value: function removeControlsRelationship() {
+      this.headerBtn.removeAttribute("aria-controls");
+    }
+  }, {
+    key: "setLabelRelationship",
+    value: function setLabelRelationship() {
+      this.headerBtn.id = this.headerBtn.id || this.content.id + "-headerbtn";
+      this.content.setAttribute("labelledby", this.headerBtn.id);
+    }
+  }, {
+    key: "removeLabelRelationship",
+    value: function removeLabelRelationship() {
+      this.content.removeAttribute("labelledby", this.headerBtn.id);
     }
   }, {
     key: "expand",
@@ -158,6 +175,61 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       }
     }
   }, {
+    key: "_contentIsAbsolute",
+    value: function _contentIsAbsolute() {
+      return window.getComputedStyle(this.content).getPropertyValue("position") === "absolute";
+    }
+  }, {
+    key: "_hoverEnabled",
+    value: function _hoverEnabled() {
+      return window.getComputedStyle(this.content).getPropertyValue("--collapse-hover").match(/true/);
+    } // if btn is non-interactive
+
+  }, {
+    key: "_isNonInteractive",
+    value: function _isNonInteractive() {
+      var headerProps = window.getComputedStyle(this.headerBtn);
+      return headerProps.getPropertyValue("pointer-events") === "none" || headerProps.getPropertyValue("display") === "none";
+    }
+  }, {
+    key: "staticHandler",
+    value: function staticHandler() {
+      if (this._isNonInteractive()) {
+        this.headerBtn.removeAttribute("aria-expanded");
+        this.headerBtn.setAttribute("role", "heading");
+        this.removeControlsRelationship();
+      } else {
+        this.setControlsRelationship();
+        this.headerBtn.removeAttribute("role");
+      }
+    }
+  }, {
+    key: "menuRoleHandler",
+    value: function menuRoleHandler() {
+      // if menu content is absolute and button is interactive, it's a menu
+      if (this._contentIsAbsolute() && !this._isNonInteractive()) {
+        this.headerBtn.setAttribute("aria-haspopup", true);
+        this.content.setAttribute("role", "menu");
+        this.content.setAttribute("aria-labelledby", this.headerBtn.id);
+        this.content.setAttribute("tabindex", "-1");
+        this.content.querySelectorAll("li").forEach(function (elem) {
+          elem.setAttribute("role", "menuitem");
+          elem.setAttribute("tabindex", "-1");
+        });
+        this.setLabelRelationship();
+      } else {
+        this.headerBtn.removeAttribute("aria-haspopup");
+        this.content.removeAttribute("role");
+        this.content.removeAttribute("aria-labelledby");
+        this.content.removeAttribute("tabindex");
+        this.content.querySelectorAll("[role=menuitem]").forEach(function (elem) {
+          elem.removeAttribute("role");
+          elem.removeAttribute("tabindex");
+        });
+        this.removeLabelRelationship();
+      }
+    }
+  }, {
     key: "toggle",
     value: function toggle() {
       if (this.collapsed) {
@@ -179,6 +251,23 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       var self = this;
       this.firstElementChild.addEventListener('click', function (event) {
         return self.toggle();
+      }); // hover handling
+
+      this.addEventListener('mouseenter', function () {
+        if (self._hoverEnabled()) {
+          self.expand();
+        }
+      });
+      this.addEventListener('mouseleave', function () {
+        if (self._hoverEnabled()) {
+          self.collapse();
+        }
+      }); // click-out and focus-out when acting as a menu
+
+      this.addEventListener("focusout", function (e) {
+        if (this._contentIsAbsolute()) {
+          self.collapse();
+        }
       }); // possibly move to a resize handler
 
       this.resizeObserver = new ResizeObserver(function (entries) {
@@ -188,7 +277,11 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var entry = _step.value;
+            self.setControlsRelationship();
+            self.setState();
             self.cssStateOverride();
+            self.staticHandler();
+            self.menuRoleHandler();
           }
         } catch (err) {
           _iterator.e(err);

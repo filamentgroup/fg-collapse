@@ -26,10 +26,12 @@ class Collapse extends HTMLElement {
 		this.headerBtn = this.firstElementChild;
 		this.content = this.headerBtn.nextElementSibling;
 		this.appendBtn();
-		this.setRelationship();
-		this.bindEvents();
-		this.cssStateOverride();
+		this.setControlsRelationship();
 		this.setState();
+		this.cssStateOverride();
+		this.staticHandler();
+		this.menuRoleHandler();
+		this.bindEvents();
 		this.dispatchEvent( this.initEvent );
 	}
 	makeEvent( evtName ){
@@ -55,10 +57,22 @@ class Collapse extends HTMLElement {
 		}
 	}
 
-	setRelationship(){
-		this.contentId = this.content.id || "collapsible_" + new Date().getTime();
-		this.content.id = this.contentId;
+	setControlsRelationship(){
+		this.content.id = this.content.id ||  "collapsible_" + new Date().getTime();
 		this.headerBtn.setAttribute( "aria-controls", this.content.id );
+	}
+
+	removeControlsRelationship(){
+		this.headerBtn.removeAttribute( "aria-controls" );
+	}
+
+	setLabelRelationship(){
+		this.headerBtn.id = this.headerBtn.id || this.content.id + "-headerbtn";
+		this.content.setAttribute( "labelledby", this.headerBtn.id );
+	}
+
+	removeLabelRelationship(){
+		this.content.removeAttribute( "labelledby", this.headerBtn.id );
 	}
 
 	expand(){
@@ -97,6 +111,59 @@ class Collapse extends HTMLElement {
 			this.expand();
 		}
 	}
+
+	_contentIsAbsolute(){
+		return window.getComputedStyle( this.content ).getPropertyValue( "position" ) === "absolute";
+	}
+
+	_hoverEnabled(){
+		return window.getComputedStyle( this.content ).getPropertyValue( "--collapse-hover" ).match(/true/);
+	}
+
+	// if btn is non-interactive
+	_isNonInteractive(){
+		var headerProps = window.getComputedStyle( this.headerBtn )
+		return headerProps.getPropertyValue( "pointer-events" ) === "none" || headerProps.getPropertyValue( "display" ) === "none";
+	}
+
+	staticHandler(){
+		if( this._isNonInteractive() ){
+			this.headerBtn.removeAttribute( "aria-expanded" );
+			this.headerBtn.setAttribute( "role", "heading" );
+			this.removeControlsRelationship();
+
+		} else {
+			this.setControlsRelationship();
+			this.headerBtn.removeAttribute( "role" );
+		}
+	}
+
+	menuRoleHandler(){
+		// if menu content is absolute and button is interactive, it's a menu
+		if( this._contentIsAbsolute() && !this._isNonInteractive() ){
+			this.headerBtn.setAttribute( "aria-haspopup", true );
+			this.content.setAttribute( "role", "menu" );
+			this.content.setAttribute( "aria-labelledby", this.headerBtn.id );
+			this.content.setAttribute( "tabindex", "-1" );
+			this.content.querySelectorAll( "li" ).forEach(function( elem ){
+				elem.setAttribute( "role", "menuitem" );
+				elem.setAttribute( "tabindex", "-1" );
+			});
+			this.setLabelRelationship();
+		}
+		else {
+			this.headerBtn.removeAttribute( "aria-haspopup" );
+			this.content.removeAttribute( "role" );
+			this.content.removeAttribute( "aria-labelledby" );
+			this.content.removeAttribute( "tabindex" );
+			this.content.querySelectorAll( "[role=menuitem]" ).forEach(function(elem){
+				elem.removeAttribute( "role" );
+				elem.removeAttribute( "tabindex" );
+			});
+			this.removeLabelRelationship();
+
+		}
+	}
 	
 
 	toggle(){
@@ -115,10 +182,35 @@ class Collapse extends HTMLElement {
 	bindEvents(){
 		var self = this;
 		this.firstElementChild.addEventListener('click', event => self.toggle());
+
+		// hover handling
+		this.addEventListener('mouseenter', function(){
+			if( self._hoverEnabled() ){
+				self.expand();
+			}
+		});
+
+		this.addEventListener('mouseleave', function(){
+			if( self._hoverEnabled() ){
+				self.collapse();
+			}
+		});
+
+		// click-out and focus-out when acting as a menu
+		this.addEventListener("focusout", function( e ){
+			if( this._contentIsAbsolute() ){
+				self.collapse();
+			}
+		});
+
 		// possibly move to a resize handler
 		this.resizeObserver = new ResizeObserver(entries => {
 			for (const entry of entries) {
+				self.setControlsRelationship();
+				self.setState();
 				self.cssStateOverride();
+				self.staticHandler();
+				self.menuRoleHandler();
 			}
 		});
 		this.resizeObserver.observe(document.body);
