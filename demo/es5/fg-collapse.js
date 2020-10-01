@@ -246,6 +246,13 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.resizeObserver.disconnect();
     }
   }, {
+    key: "_collapseIfOutsideTarget",
+    value: function _collapseIfOutsideTarget(e) {
+      if (e.target !== this && !this.contains(e.target) && this._contentIsAbsolute() && !this.collapsed) {
+        this.collapse();
+      }
+    }
+  }, {
     key: "bindEvents",
     value: function bindEvents() {
       var self = this;
@@ -264,10 +271,11 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
         }
       }); // click-out and focus-out when acting as a menu
 
-      this.addEventListener("focusout", function (e) {
-        if (this._contentIsAbsolute()) {
-          self.collapse();
-        }
+      document.body.addEventListener("focusin", function (e) {
+        self._collapseIfOutsideTarget(e);
+      });
+      document.body.addEventListener("pointerdown", function (e) {
+        self._collapseIfOutsideTarget(e);
       }); // possibly move to a resize handler
 
       this.resizeObserver = new ResizeObserver(function (entries) {

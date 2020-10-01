@@ -179,6 +179,15 @@ class Collapse extends HTMLElement {
 		 this.resizeObserver.disconnect();
 	}
 
+	_collapseIfOutsideTarget(e){
+		if( e.target !== this 
+			&& !this.contains( e.target ) 
+			&& this._contentIsAbsolute() 
+			&& !this.collapsed ){
+			this.collapse();
+		}
+	}
+
 	bindEvents(){
 		var self = this;
 		this.firstElementChild.addEventListener('click', event => self.toggle());
@@ -197,10 +206,12 @@ class Collapse extends HTMLElement {
 		});
 
 		// click-out and focus-out when acting as a menu
-		this.addEventListener("focusout", function( e ){
-			if( this._contentIsAbsolute() ){
-				self.collapse();
-			}
+		document.body.addEventListener("focusin", function( e ){
+			self._collapseIfOutsideTarget(e);
+		});
+
+		document.body.addEventListener("pointerdown", function( e ){
+			self._collapseIfOutsideTarget(e);
 		});
 
 		// possibly move to a resize handler
