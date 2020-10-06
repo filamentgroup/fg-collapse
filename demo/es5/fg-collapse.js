@@ -213,20 +213,28 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
         this.content.setAttribute("aria-labelledby", this.headerBtn.id);
         this.content.setAttribute("tabindex", "-1");
         this.content.querySelectorAll("li").forEach(function (elem) {
-          elem.setAttribute("role", "menuitem");
+          if (elem.classList.contains("menu_item_check")) {
+            elem.setAttribute("role", "menuitemcheckbox");
+            elem.setAttribute("aria-checked", elem.classList.contains("menu_item_check-checked") ? "true" : "false");
+          } else {
+            elem.setAttribute("role", "menuitem");
+          }
+
           elem.setAttribute("tabindex", "-1");
         });
         this.setLabelRelationship();
+        this.menu = true;
       } else {
         this.headerBtn.removeAttribute("aria-haspopup");
         this.content.removeAttribute("role");
         this.content.removeAttribute("aria-labelledby");
         this.content.removeAttribute("tabindex");
-        this.content.querySelectorAll("[role=menuitem]").forEach(function (elem) {
+        this.content.querySelectorAll("[role=menuitem],[role=menuitemcheckbox]").forEach(function (elem) {
           elem.removeAttribute("role");
           elem.removeAttribute("tabindex");
         });
         this.removeLabelRelationship();
+        this.menu = false;
       }
     }
   }, {
@@ -253,6 +261,53 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       }
     }
   }, {
+    key: "_focusFirstMenuItem",
+    value: function _focusFirstMenuItem() {
+      this.content.querySelector("[role=menuitem], [role=menuitemcheckbox]").focus();
+    }
+  }, {
+    key: "_focusNextMenuItem",
+    value: function _focusNextMenuItem(dir) {
+      var self = this;
+      var activeIndex = 1;
+      dir = dir || 1;
+      var nextItem;
+      var i = 0;
+      var menuItems = this.content.querySelectorAll("[role=menuitem], [role=menuitemcheckbox]");
+      menuItems.forEach(function (elem) {
+        if (self.focusedItem && elem === self.focusedItem) {
+          activeIndex = i;
+        }
+
+        i++;
+      });
+      nextItem = menuItems[activeIndex + dir];
+
+      if (nextItem) {
+        nextItem.focus();
+      } else if (dir === -1) {
+        this.headerBtn.focus();
+      }
+    }
+  }, {
+    key: "_handleCheckToggle",
+    value: function _handleCheckToggle(e) {
+      var self = this;
+
+      if (self.menu && e.target.closest("[role=menuitemcheckbox]")) {
+        e.preventDefault();
+        var menuItem = e.target.closest("[role=menuitemcheckbox]");
+        var checkedState = menuItem.getAttribute("aria-checked") === "true" ? "false" : "true";
+        menuItem.setAttribute("aria-checked", checkedState);
+
+        if (checkedState === "true") {
+          menuItem.classList.add("menu_item_check-checked");
+        } else {
+          menuItem.classList.remove("menu_item_check-checked");
+        }
+      }
+    }
+  }, {
     key: "bindEvents",
     value: function bindEvents() {
       var self = this;
@@ -263,6 +318,8 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.addEventListener('mouseenter', function () {
         if (self._hoverEnabled()) {
           self.expand();
+
+          self._focusFirstMenuItem();
         }
       });
       this.addEventListener('mouseleave', function () {
@@ -276,6 +333,64 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       });
       document.body.addEventListener("pointerdown", function (e) {
         self._collapseIfOutsideTarget(e);
+      }); // menu key handling
+
+      this.headerBtn.addEventListener('keydown', function (e) {
+        if (self.menu) {
+          // arrow expand, also enter and space keys work
+          if (e.which === 40) {
+            e.preventDefault();
+
+            if (self.collapsed) {
+              self.expand();
+            }
+
+            self._focusFirstMenuItem();
+          } // tab collapses and moves on
+          else if (e.which === 9) {
+              self.collapse();
+            }
+        }
+      });
+      this.content.addEventListener('keydown', function (e) {
+        if (self.menu) {
+          // arrow down
+          if (e.which === 40) {
+            e.preventDefault();
+
+            self._focusNextMenuItem(1);
+          } // arrow up
+
+
+          if (e.which === 38) {
+            e.preventDefault();
+
+            self._focusNextMenuItem(-1);
+          } // tab away
+
+
+          if (e.which === 9) {
+            self.collapse();
+          } // esc away
+
+
+          if (e.which === 27) {
+            self.headerBtn.focus();
+          } // space or enter
+
+
+          if (e.which === 32 || e.which === 13) {
+            self._handleCheckToggle(e);
+          }
+        }
+      });
+      this.content.addEventListener("focusin", function (e) {
+        if (self.menu && e.target.closest("[role=menuitem],[role=menuitemcheckbox]")) {
+          self.focusedItem = e.target.closest("[role=menuitem],[role=menuitemcheckbox]");
+        }
+      });
+      this.content.addEventListener("click", function (e) {
+        self._handleCheckToggle(e);
       }); // possibly move to a resize handler
 
       this.resizeObserver = new ResizeObserver(function (entries) {
