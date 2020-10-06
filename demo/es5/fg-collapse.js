@@ -375,6 +375,7 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
 
 
           if (e.which === 27) {
+            self.collapse();
             self.headerBtn.focus();
           } // space or enter
 
