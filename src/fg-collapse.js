@@ -27,10 +27,11 @@ class Collapse extends HTMLElement {
 		this.content = this.headerBtn.nextElementSibling;
 		this.appendBtn();
 		this.setControlsRelationship();
+		this.addMenuSemantics();
+		this.popupHandler();
 		this.setState();
 		this.cssStateOverride();
 		this.staticHandler();
-		this.menuRoleHandler();
 		this.bindEvents();
 		this.dispatchEvent( this.initEvent );
 	}
@@ -64,15 +65,6 @@ class Collapse extends HTMLElement {
 
 	removeControlsRelationship(){
 		this.headerBtn.removeAttribute( "aria-controls" );
-	}
-
-	setLabelRelationship(){
-		this.headerBtn.id = this.headerBtn.id || this.content.id + "-headerbtn";
-		this.content.setAttribute( "labelledby", this.headerBtn.id );
-	}
-
-	removeLabelRelationship(){
-		this.content.removeAttribute( "labelledby", this.headerBtn.id );
 	}
 
 	expand(){
@@ -131,20 +123,25 @@ class Collapse extends HTMLElement {
 			this.headerBtn.removeAttribute( "aria-expanded" );
 			this.headerBtn.setAttribute( "role", "heading" );
 			this.removeControlsRelationship();
-
+			if( this.menuSemantics ){
+				this.content.setAttribute( "tabindex", "0" );
+			}
 		} else {
 			this.setControlsRelationship();
 			this.headerBtn.removeAttribute( "role" );
+			if( this.menuSemantics ){
+				this.content.setAttribute( "tabindex", "-1" );
+			}
 		}
 	}
 
-	menuRoleHandler(){
-		// if menu content is absolute and button is interactive, it's a menu
-		if( this._contentIsAbsolute() && !this._isNonInteractive() ){
-			this.headerBtn.setAttribute( "aria-haspopup", true );
+	addMenuSemantics(){
+		if( this.getAttribute( "data-collapse-role" ) === "menu" ){
+			this.menuSemantics = true;
 			this.content.setAttribute( "role", "menu" );
-			this.content.setAttribute( "aria-labelledby", this.headerBtn.id );
 			this.content.setAttribute( "tabindex", "-1" );
+			this.headerBtn.id = this.headerBtn.id || this.content.id + "-headerbtn";
+			this.content.setAttribute( "labelledby", this.headerBtn.id );
 			this.content.querySelectorAll( "li" ).forEach(function( elem ){
 				if( elem.classList.contains("menu_item_check")  ){
 					elem.setAttribute( "role", "menuitemcheckbox" );
@@ -155,20 +152,18 @@ class Collapse extends HTMLElement {
 				}
 				elem.setAttribute( "tabindex", "-1" );
 			});
-			this.setLabelRelationship();
-			this.menu = true;
+		}
+	}
+
+	popupHandler(){
+		// if menu content is absolute and button is interactive, it's a popup
+		if( this._contentIsAbsolute() && !this._isNonInteractive() ){
+			this.headerBtn.setAttribute( "aria-haspopup", true );
+			this.popup = true;
 		}
 		else {
 			this.headerBtn.removeAttribute( "aria-haspopup" );
-			this.content.removeAttribute( "role" );
-			this.content.removeAttribute( "aria-labelledby" );
-			this.content.removeAttribute( "tabindex" );
-			this.content.querySelectorAll( "[role=menuitem],[role=menuitemcheckbox]" ).forEach(function(elem){
-				elem.removeAttribute( "role" );
-				elem.removeAttribute( "tabindex" );
-			});
-			this.removeLabelRelationship();
-			this.menu = false;
+			this.popup = false;
 		}
 	}
 	
@@ -201,7 +196,7 @@ class Collapse extends HTMLElement {
 
 	_focusNextMenuItem( dir ){
 		var self = this;
-		var activeIndex = 1;
+		var activeIndex = 0;
 		dir = dir || 1;
 		var nextItem;
 		var i = 0;
@@ -223,7 +218,7 @@ class Collapse extends HTMLElement {
 
 	_handleCheckToggle(e){
 		var self = this;
-		if( self.menu && e.target.closest( "[role=menuitemcheckbox]" ) ){
+		if( self.menuSemantics && e.target.closest( "[role=menuitemcheckbox]" ) ){
 			e.preventDefault();
 			var menuItem = e.target.closest( "[role=menuitemcheckbox]" );
 			var checkedState = menuItem.getAttribute( "aria-checked" ) === "true" ? "false" : "true";
@@ -265,28 +260,34 @@ class Collapse extends HTMLElement {
 
 		// menu key handling
 		this.headerBtn.addEventListener('keydown', function( e ){
-			if( self.menu ){
+			
 				// arrow expand, also enter and space keys work
 				if( e.which === 40 ){
 					e.preventDefault();
-					if( self.collapsed ){
+					if( self.collapsed && self.popup ){
 						self.expand();
 					}
-					self._focusFirstMenuItem();
+					if( self.menuSemantics ){
+						self._focusFirstMenuItem();
+					}
 				}
 				// tab collapses and moves on
-				else if( e.which === 9 ){
+				else if( e.which === 9 && self.popup ){
 					self.collapse();
 				}
-			}
 		});
 
 		this.content.addEventListener('keydown', function( e ){
-			if( self.menu ){
+			if( self.menuSemantics ){
 				// arrow down
 				if( e.which === 40 ){
 					e.preventDefault();
-					self._focusNextMenuItem(1);
+					if( e.target === self.content ){
+						self._focusFirstMenuItem();
+					}
+					else {
+						self._focusNextMenuItem(1);
+					}
 				}
 				// arrow up
 				if( e.which === 38 ){
@@ -299,8 +300,8 @@ class Collapse extends HTMLElement {
 				}
 				// esc away
 				if( e.which === 27 ){
-					self.collapse();
 					self.headerBtn.focus();
+					self.collapse();
 				}
 				// space or enter
 				if( e.which === 32 || e.which === 13 ){
@@ -310,7 +311,7 @@ class Collapse extends HTMLElement {
 		});
 
 		this.content.addEventListener("focusin", function( e ){
-			if( self.menu && e.target.closest( "[role=menuitem],[role=menuitemcheckbox]" ) ){
+			if( self.menuSemantics && e.target.closest( "[role=menuitem],[role=menuitemcheckbox]" ) ){
 				self.focusedItem = e.target.closest( "[role=menuitem],[role=menuitemcheckbox]" );
 			}
 		});
@@ -326,7 +327,7 @@ class Collapse extends HTMLElement {
 				self.setState();
 				self.cssStateOverride();
 				self.staticHandler();
-				self.menuRoleHandler();
+				self.popupHandler();
 			}
 		});
 		this.resizeObserver.observe(document.body);
