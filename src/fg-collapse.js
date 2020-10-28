@@ -142,10 +142,17 @@ class Collapse extends HTMLElement {
 			this.content.setAttribute( "tabindex", "-1" );
 			this.headerBtn.id = this.headerBtn.id || this.content.id + "-headerbtn";
 			this.content.setAttribute( "labelledby", this.headerBtn.id );
+			this.content.querySelectorAll( ".menu_item_group" ).forEach(function(elem){
+				elem.setAttribute( "role", "group" );
+			});
 			this.content.querySelectorAll( "li" ).forEach(function( elem ){
 				if( elem.classList.contains("menu_item_check")  ){
 					elem.setAttribute( "role", "menuitemcheckbox" );
 					elem.setAttribute( "aria-checked", elem.classList.contains("menu_item_check-checked") ? "true" : "false" );
+				}
+				else if( elem.classList.contains("menu_item_radio")  ){
+					elem.setAttribute( "role", "menuitemradio" );
+					elem.setAttribute( "aria-checked", elem.classList.contains("menu_item_radio-checked") ? "true" : "false" );
 				}
 				else {
 					elem.setAttribute( "role", "menuitem" );
@@ -191,7 +198,7 @@ class Collapse extends HTMLElement {
 	}
 
 	_focusFirstMenuItem(){
-		this.content.querySelector( "[role=menuitem], [role=menuitemcheckbox]").focus();
+		this.content.querySelector( "[role=menuitem], [role=menuitemcheckbox], [role=menuitemradio]").focus();
 	}
 
 	_focusNextMenuItem( dir ){
@@ -200,7 +207,7 @@ class Collapse extends HTMLElement {
 		dir = dir || 1;
 		var nextItem;
 		var i = 0;
-		var menuItems = this.content.querySelectorAll( "[role=menuitem], [role=menuitemcheckbox]");
+		var menuItems = this.content.querySelectorAll( "[role=menuitem], [role=menuitemcheckbox], , [role=menuitemradio]");
 		menuItems.forEach(function(elem){
 			if( self.focusedItem && elem === self.focusedItem ){
 				activeIndex = i;
@@ -218,16 +225,30 @@ class Collapse extends HTMLElement {
 
 	_handleCheckToggle(e){
 		var self = this;
-		if( self.menuSemantics && e.target.closest( "[role=menuitemcheckbox]" ) ){
+		if( self.menuSemantics && e.target.closest( "[role=menuitemcheckbox], [role=menuitemradio]" ) ){
 			e.preventDefault();
-			var menuItem = e.target.closest( "[role=menuitemcheckbox]" );
-			var checkedState = menuItem.getAttribute( "aria-checked" ) === "true" ? "false" : "true";
-			menuItem.setAttribute( "aria-checked", checkedState );
-			if( checkedState === "true" ){
-				menuItem.classList.add( "menu_item_check-checked" );
+			var menuItemCheck = e.target.closest( "[role=menuitemcheckbox]" );
+			if( menuItemCheck ){
+				var checkToggledState = menuItemCheck.getAttribute( "aria-checked" ) === "true" ? "false" : "true";
+				menuItemCheck.setAttribute( "aria-checked", checkToggledState );
+				if( checkToggledState === "true" ){
+					menuItemCheck.classList.add( "menu_item_check-checked" );
+				}
+				else {
+					menuItemCheck.classList.remove( "menu_item_check-checked" );
+				}
 			}
-			else {
-				menuItem.classList.remove( "menu_item_check-checked" );
+			var menuItemRadio = e.target.closest( "[role=menuitemradio]" );
+			if( menuItemRadio ){
+				var menuItemRadioChecked = menuItemRadio.getAttribute( "aria-checked" );
+				if( menuItemRadioChecked === null || menuItemRadioChecked === "false" ){
+					menuItemRadio.parentElement.childNodes.forEach( function( elem ){
+						elem.setAttribute( "aria-checked", "false" );
+						elem.classList.remove( "menu_item_radio-checked" );
+					})
+					menuItemRadio.setAttribute( "aria-checked", "true" );
+					menuItemRadio.classList.add( "menu_item_radio-checked" );
+				}
 			}
 		}
 	}
@@ -311,8 +332,8 @@ class Collapse extends HTMLElement {
 		});
 
 		this.content.addEventListener("focusin", function( e ){
-			if( self.menuSemantics && e.target.closest( "[role=menuitem],[role=menuitemcheckbox]" ) ){
-				self.focusedItem = e.target.closest( "[role=menuitem],[role=menuitemcheckbox]" );
+			if( self.menuSemantics && e.target.closest( "[role=menuitem],[role=menuitemcheckbox],[role=menuitemradio]" ) ){
+				self.focusedItem = e.target.closest( "[role=menuitem],[role=menuitemcheckbox],[role=menuitemradio]" );
 			}
 		});
 
