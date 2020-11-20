@@ -77,8 +77,8 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
       this.appendBtn();
       this.setControlsRelationship();
       this.addMenuSemantics();
-      this.popupHandler();
-      this.setState();
+      this.popupHandler(); //this.setState();
+
       this.cssStateOverride();
       this.staticHandler();
       this.bindEvents();
@@ -133,7 +133,7 @@ var Collapse = /*#__PURE__*/function (_HTMLElement) {
     key: "collapse",
     value: function collapse() {
       this.headerBtn.setAttribute("aria-expanded", "false");
-      this.setAttribute("collapsed", "");
+      this.setAttribute("collapsed", "true");
       this.collapsed = true;
       this.dispatchEvent(this.collapseEvent);
     }

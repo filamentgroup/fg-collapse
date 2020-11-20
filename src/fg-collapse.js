@@ -29,7 +29,7 @@ class Collapse extends HTMLElement {
 		this.setControlsRelationship();
 		this.addMenuSemantics();
 		this.popupHandler();
-		this.setState();
+		//this.setState();
 		this.cssStateOverride();
 		this.staticHandler();
 		this.bindEvents();
@@ -76,7 +76,7 @@ class Collapse extends HTMLElement {
 
 	collapse(){
 		this.headerBtn.setAttribute( "aria-expanded", "false" );
-		this.setAttribute( "collapsed", "" );
+		this.setAttribute( "collapsed", "true" );
 		this.collapsed = true;
 		this.dispatchEvent( this.collapseEvent );
 	}
