@@ -1,3 +1,5 @@
+:warning: This project is archived and the repository is no longer maintained. 
+
 # fg-collapse
 
 An accessible collapsible web component
